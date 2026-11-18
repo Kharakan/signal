@@ -1,5 +1,6 @@
 // mautrix-signal - A Matrix-Signal puppeting bridge.
 // Copyright (C) 2024 Tulir Asokan
+// Copyright (C) 2026 Dominik Sattler (preserve-deletions-and-edits fork)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -30,6 +31,26 @@ type PortalMetadata struct {
 type MessageMetadata struct {
 	ContainsAttachments bool     `json:"contains_attachments,omitempty"`
 	MatrixPollOptionIDs []string `json:"matrix_poll_option_ids,omitempty"`
+
+	// PreservedEdits stores the body of each previous revision of this message
+	// when the fork-local preserve-deletions-and-edits feature is enabled. It
+	// is nil/empty for messages received before the feature was switched on,
+	// in which case annotations fall back to a "(original not preserved)"
+	// placeholder. The `omitempty` tag keeps old DB rows binary-compatible.
+	PreservedEdits []PreservedEdit `json:"preserved_edits,omitempty"`
+}
+
+// PreservedEdit captures one historical revision of a message — either an
+// edit's previous body, or the body that existed before a sender-initiated
+// delete-for-everyone. Used to render inline edit/redaction annotations.
+type PreservedEdit struct {
+	Body          string             `json:"body"`
+	FormattedBody string             `json:"formatted_body,omitempty"`
+	Timestamp     jsontime.UnixMilli `json:"timestamp"`
+	// Deleted distinguishes a delete-for-everyone event from a regular edit
+	// so the consumer can pick the redaction marker template instead of the
+	// edit marker template.
+	Deleted bool `json:"deleted,omitempty"`
 }
 
 type UserLoginMetadata struct {

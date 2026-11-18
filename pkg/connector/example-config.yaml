@@ -26,3 +26,30 @@ location_format: 'https://www.google.com/maps/place/%[1]s,%[2]s'
 disappear_view_once: false
 # Should polls be sent using unstable MSC3381 event types?
 extev_polls: false
+# Preserve deletions and edits (fork-local feature, not in upstream mautrix-signal).
+#
+# When enabled, deleted/edited messages from Signal are NOT redacted or
+# overwritten in Matrix. Instead, the deleted text is kept and annotated with
+# strikethrough plus a marker line. Edits keep their previous version(s)
+# visible inline as a small audit trail.
+#
+# Disabled by default. Enable globally with default_enabled, or per-user via
+# the `!signal preserve-deletions on` bot command (overrides the default).
+preserve_deletions_and_edits:
+    # Master switch. A user's bot-command override takes precedence over this.
+    default_enabled: false
+    # Marker line templates. Placeholders:
+    #   {timestamp} - rendered using timestamp_format below
+    #   {count}     - number of edits so far (only used in edited_multi)
+    #   {n}         - version index (only used in version_label)
+    markers:
+        redacted: "🗑️ Deleted by sender • {timestamp}"
+        edited: "✏️ Edited • {timestamp}"
+        edited_multi: "✏️ Edited ({count}×) • {timestamp}"
+        original_label: "Original:"
+        version_label: "v{n}:"
+    # Go time.Format layout. See https://pkg.go.dev/time#Layout
+    timestamp_format: "2006-01-02 15:04"
+    # How many previous versions to show below an edited message.
+    # 0 = only the direct predecessor (strikethrough'd).
+    max_edit_history: 3
